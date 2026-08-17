@@ -1,0 +1,15 @@
+# Entorno del servidor (se instala con uv; ~560 MB)
+.venv/
+
+# Artefactos de compilación de Swift y paquete de distribución
+MenuBarApp/.build/
+MenuBarApp/dist/
+
+# Estado de ejecución del servidor
+*.log
+.server.pid
+
+# Resultados de benchmarks (locales, dependen de la máquina)
+result_*.json
+
+.DS_Store
