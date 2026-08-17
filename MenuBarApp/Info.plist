@@ -12,10 +12,13 @@
     <string>com.joanplanas.batuta</string>
     <key>CFBundleName</key>
     <string>Batuta MLX</string>
+    <!-- Generado por make-icon.swift; build-app.sh lo copia a Contents/Resources. -->
+    <key>CFBundleIconFile</key>
+    <string>BatutaMLX</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>1.1</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>2</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>LSMinimumSystemVersion</key>

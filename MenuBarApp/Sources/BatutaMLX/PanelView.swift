@@ -283,11 +283,21 @@ struct PanelView: View {
 
     private var contextPicker: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Ventana de contexto")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack {
+                Text("Ventana de contexto")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                // El coste de memoria de la opción elegida, para que la decisión
+                // se tome con el dato delante.
+                Text(String(format: "caché KV ≈ %.1f GB",
+                            ServerModel.kvBytes(forContext: model.desiredContext) / 1e9))
+                    .foregroundStyle(.tertiary)
+                    .monospacedDigit()
+            }
+            .font(.caption)
             Picker("Contexto", selection: contextBinding) {
-                ForEach(ServerModel.contextOptions, id: \.self) { opt in
+                // Solo las ventanas que caben en este Mac (derivadas de la RAM).
+                ForEach(model.contextOptions, id: \.self) { opt in
                     Text("\(opt / 1000)k").tag(opt)
                 }
             }

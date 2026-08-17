@@ -6,6 +6,12 @@ cd "$(dirname "$0")"
 BIN=BatutaMLX          # nombre del ejecutable y del target SPM
 APP="Batuta MLX.app"   # nombre visible del bundle
 
+if [[ ! -f "Resources/$BIN.icns" ]]; then
+  echo "· generando el icono…"
+  mkdir -p .build
+  swift make-icon.swift
+fi
+
 echo "· compilando (release)…"
 swift build -c release
 
@@ -14,9 +20,10 @@ APP_DEST="$HOME/Applications/$APP"
 
 echo "· montando bundle…"
 rm -rf "$APP_STAGING"
-mkdir -p "$APP_STAGING/Contents/MacOS"
+mkdir -p "$APP_STAGING/Contents/MacOS" "$APP_STAGING/Contents/Resources"
 cp Info.plist "$APP_STAGING/Contents/Info.plist"
 cp ".build/release/$BIN" "$APP_STAGING/Contents/MacOS/$BIN"
+cp "Resources/$BIN.icns" "$APP_STAGING/Contents/Resources/$BIN.icns"
 
 echo "· firmando (ad-hoc, sella el bundle completo)…"
 codesign --force --deep -s - "$APP_STAGING"

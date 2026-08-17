@@ -90,8 +90,17 @@ Decisiones de diseño:
   modelo) y **reconcilia en cada sondeo**: si algo reinicia el servidor (p. ej.
   `./mlx restart` en Terminal, que vuelve a imponer el `--max-kv-size` de `serve.sh`),
   la app re-aplica tu elección en ≤6 s. Verificado de extremo a extremo.
-- La opción 262k no existe en el picker: ≈17 GB de KV + 15,7 GB de pesos rozan los
-  36 GB de la máquina. Quien la quiera, que edite `serve.sh` a mano.
+- **Las ventanas ofrecidas dependen de la RAM del Mac**, porque la caché KV cuesta
+  ~64 KB por token y la GPU solo puede tener «wired» unos 3/4 de la memoria:
+
+  | RAM | Opciones |
+  |---|---|
+  | 32–36 GB | 32k · 65k · 95k · 131k |
+  | 48 GB o más | + **262k** (el contexto nativo: ≈17 GB de KV + 16 GB de pesos) |
+
+  El panel muestra el coste en GB de la opción elegida. Y como `PATCH /v1/settings`
+  puede subir el límite hasta el nativo, 262k funciona sin reinstalar aunque el
+  `serve.sh` generado por el instalador arrancara con menos.
 - Un timeout del servidor **no** se interpreta como «parado»: solo conexión rechazada
   sin proceso `mlx_vlm.server` vivo habilita el botón Arrancar (evita el doble arranque,
   que cargaría 15,7 GB duplicados porque uvicorn carga el modelo antes de abrir el

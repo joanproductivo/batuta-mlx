@@ -4,6 +4,8 @@
 # Artefactos de compilación de Swift y paquete de distribución
 MenuBarApp/.build/
 MenuBarApp/dist/
+# El icono se genera desde make-icon.swift en cada build (no versionamos binarios)
+MenuBarApp/Resources/
 
 # Estado de ejecución del servidor
 *.log

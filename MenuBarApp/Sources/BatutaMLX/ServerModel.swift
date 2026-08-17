@@ -101,8 +101,31 @@ final class ServerModel {
         didSet { UserDefaults.standard.set(desiredContext, forKey: Self.contextKey) }
     }
 
-    static let contextOptions = [32_768, 65_536, 95_536, 131_072]
+    /// Ventanas de contexto que caben en ESTE Mac. La lista se deriva de la RAM en
+    /// vez de ser fija: 262k pide ~17 GB de caché KV y solo tiene sentido en Macs
+    /// grandes, pero excluirlo siempre penalizaba a quien tiene 64 o 128 GB.
+    let contextOptions: [Int]
     static let maxSeqsOptions = [0, 1, 2, 4]
+
+    /// Pesos del stack (modelo 4-bit + drafter MTP), medidos.
+    private static let weightsBytes = 16_000_000_000.0
+    /// Caché KV por token: solo 16 de las 64 capas son de atención completa; el
+    /// resto son lineales con estado fijo. Medido: ~64 KB/token.
+    private static let kvBytesPerToken = 65_536.0
+
+    static func kvBytes(forContext tokens: Int) -> Double {
+        Double(tokens) * kvBytesPerToken
+    }
+
+    /// Una ventana cabe si pesos + KV entran en el presupuesto que la GPU puede
+    /// tener «wired» (~3/4 de la RAM por defecto en Apple Silicon; subirlo exige
+    /// sudo, así que se asume el valor de fábrica).
+    static func contextOptions(forPhysicalMemory bytes: UInt64) -> [Int] {
+        let budget = Double(bytes) * 0.75 - weightsBytes
+        let all = [32_768, 65_536, 95_536, 131_072, 262_144]
+        let fitting = all.filter { kvBytes(forContext: $0) <= budget }
+        return fitting.isEmpty ? [all[0]] : fitting
+    }
     private static let contextKey = "desiredContextTokens"
     private static let scriptKey = "mlxScriptPath"
     private static let autoStartKey = "autoStartServer"
@@ -132,8 +155,15 @@ final class ServerModel {
         cfg.timeoutIntervalForRequest = 2
         cfg.timeoutIntervalForResource = 4
         session = URLSession(configuration: cfg)
+        let options = Self.contextOptions(
+            forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
+        contextOptions = options
+        // El valor guardado puede no estar ofrecido (p. ej. la app viaja a un Mac
+        // con menos memoria): cae al mayor que quepa sin pasar del defecto.
         let saved = UserDefaults.standard.integer(forKey: Self.contextKey)
-        desiredContext = Self.contextOptions.contains(saved) ? saved : 95_536
+        desiredContext = options.contains(saved)
+            ? saved
+            : (options.last { $0 <= 95_536 } ?? options[0])
         autoStartServer = UserDefaults.standard.bool(forKey: Self.autoStartKey)
         let seqs = UserDefaults.standard.integer(forKey: Self.maxSeqsKey)
         desiredMaxSeqs = Self.maxSeqsOptions.contains(seqs) ? seqs : 0
