@@ -12,7 +12,7 @@ Dos piezas acopladas:
 1. **El stack de servidor**: `mlx-vlm` 0.6.14 sirviendo `Qwen3.8-27B-4bit` con
    speculative decoding MTP en Apple Silicon. Se controla con dos scripts de shell
    (`serve.sh` lanza el servidor, `mlx` lo gestiona) y se mide con `bench.py`.
-2. **Batuta** (`MenuBarApp/`): app SwiftUI de barra de menús que controla ese servidor
+2. **Batuta MLX** (`MenuBarApp/`): app SwiftUI de barra de menús que controla ese servidor
    por HTTP y, en un Mac nuevo, **instala todo el stack ella misma**.
 
 No es un repositorio git. `.venv/` es el entorno del servidor (no se versiona ni se
@@ -30,7 +30,7 @@ toca a mano); `mlx-vlm` 0.6.14 no está en PyPI y se instala desde el `main` de 
 ```
 
 ```bash
-MenuBarApp/build-app.sh   # compila, firma ad-hoc, instala en ~/Applications y empaqueta dist/Batuta.zip
+MenuBarApp/build-app.sh   # compila, firma ad-hoc, instala en ~/Applications y empaqueta dist/BatutaMLX.zip
 cd MenuBarApp && swift build   # solo compilar (sin instalar)
 ```
 
@@ -41,13 +41,13 @@ servidor, `./mlx test`, comprobar `/metrics`).
 **Trampa del build**: `.build/release` es un symlink y SwiftPM puede reutilizar un
 binario rancio tras editar Swift. Si un cambio no aparece en la app, `rm -rf
 MenuBarApp/.build` y reconstruye; verifica con
-`LC_ALL=C grep -ac "<string nuevo>" ~/Applications/Batuta.app/Contents/MacOS/Batuta`
+`LC_ALL=C grep -ac "<string nuevo>" ~/Applications/Batuta MLX.app/Contents/MacOS/Batuta`
 (`strings` no encuentra literales con acentos).
 
-## Arquitectura de Batuta
+## Arquitectura de Batuta MLX
 
 `MenuBarExtra` estilo `.window`, `LSUIElement` (sin Dock). Tres modelos `@Observable
-@MainActor` creados en `BatutaApp.swift` y pasados al panel:
+@MainActor` creados en `BatutaMLXApp.swift` y pasados al panel:
 
 - **`ServerModel`** — sondea `GET /metrics` (3 s con el panel cerrado, 1 s abierto) y
   deriva de ahí TODO: velocidad de la última petición, gráfica de las últimas 32,
@@ -70,7 +70,7 @@ Nacieron de auditorías adversariales; cada uno tiene un incidente concreto detr
 - **Nunca escribir `state` tras un `await` sin re-comprobar la transición.** Un sondeo
   suspendido que despierta con datos viejos puede pisar `.starting` y reabrir el doble
   arranque. El guard es el flag `appDrivenTransition`.
-- **`@State` de los modelos sin valor por defecto** en `BatutaApp`: un inicializador
+- **`@State` de los modelos sin valor por defecto** en `BatutaMLXApp`: un inicializador
   ahí correría antes del `init()` y crearía un `ServerModel` huérfano cuyo `pollLoop`
   se auto-retiene (zombi sondeando + doble auto-arranque).
 - **`SetupModel.cancel()` invalida por token de generación** (`generation`), no solo
@@ -120,7 +120,7 @@ plantillas**; sus únicas divergencias permitidas son `python3` → `.venv/bin/p
 - **`--max-tokens`** es el valor por defecto para clientes que no lo mandan, **no un
   tope**. No existe «sin límite»: `-1` y `0` cortan la generación al instante.
 - **`--max-num-seqs`** (peticiones simultáneas) NO es knob en caliente: va por env
-  `MLX_VLM_MAX_NUM_SEQS`; Batuta lo inyecta como `MAXSEQS` al arrancar.
+  `MLX_VLM_MAX_NUM_SEQS`; Batuta MLX lo inyecta como `MAXSEQS` al arrancar.
 - **KV cache**: ~64 KB/token (solo 16 de las 64 capas son de atención completa; el
   resto son lineales con estado fijo). 262 k ≈ 17 GB.
 - **`/metrics`** expone `latest`, `summary.in_flight` y `recent` — la API recorta

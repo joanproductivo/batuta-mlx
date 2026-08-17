@@ -3,13 +3,15 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
-    <string>Batuta</string>
+    <string>BatutaMLX</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <!-- El identificador NO cambia con el nombre visible: es la clave de las
+         preferencias y del ítem de inicio, y Apple recomienda no tocarlo nunca. -->
     <key>CFBundleIdentifier</key>
     <string>com.joanplanas.batuta</string>
     <key>CFBundleName</key>
-    <string>Batuta</string>
+    <string>Batuta MLX</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
     <key>CFBundleVersion</key>

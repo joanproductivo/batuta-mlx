@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct BatutaApp: App {
+struct BatutaMLXApp: App {
     // SIN valor por defecto: un inicializador aquí correría ANTES del init() y
     // crearía un segundo ServerModel huérfano cuyo pollLoop se auto-retiene
     // (GRAVE-1 de los verificadores: zombi sondeando + doble auto-arranque).

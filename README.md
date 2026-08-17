@@ -1,6 +1,6 @@
-# Batuta
+# Batuta MLX
 
-**Un LLM local en la barra de menús del Mac.** Batuta arranca, para y vigila un servidor
+**Un LLM local en la barra de menús del Mac.** Batuta MLX arranca, para y vigila un servidor
 [mlx-vlm](https://github.com/Blaizzy/mlx-vlm) con `Qwen3.8-27B` y *speculative decoding*
 MTP, y en un Mac nuevo **instala el stack entero ella sola** — sin Xcode, sin Homebrew,
 sin Python previo y sin contraseña de administrador.
@@ -14,7 +14,7 @@ cambiar la URL base lo usa sin adaptaciones.
 
 ## Empezar
 
-Descarga `Batuta.zip` de la [última release](../../releases/latest), muévela a
+Descarga `BatutaMLX.zip` de la [última release](../../releases/latest), muévela a
 `/Applications` **con el Finder antes de abrirla**, ábrela y pulsa «Instalar».
 
 **Requisitos**: Apple Silicon, macOS 14+, **32 GB de RAM mínimo** (36+ recomendados),
@@ -49,7 +49,7 @@ Pesos — hacen falta **los dos**, tienen papeles distintos:
 Si lo quitas, el servidor sigue funcionando igual de bien pero más lento: arranca con
 `./serve.sh --no-mtp`. No merece la pena por 253 MB.
 
-## Batuta — app de barra de menús
+## Batuta MLX — app de barra de menús
 
 Control del servidor desde la barra de estado de macOS: arrancar/parar, velocidad de la
 última petición (decode/prefill/ttft), mini-gráfica de las últimas 32 peticiones,
@@ -63,7 +63,7 @@ Además:
   funciona sin salir de la barra. Responde sin razonamiento (`enable_thinking: false`)
   y con tope de 1024 tokens; la conversación sobrevive a cerrar el panel.
 - **Memoria del servidor**: los GB de RSS del proceso, en la cabecera, junto al contexto.
-- **Ajustes**: abrir Batuta al iniciar sesión (SMAppService), arrancar el servidor
+- **Ajustes**: abrir Batuta MLX al iniciar sesión (SMAppService), arrancar el servidor
   automáticamente al abrir la app (apagado por defecto), y «Ver log del servidor».
 
 ```bash
@@ -71,7 +71,7 @@ MenuBarApp/build-app.sh
 ```
 
 Compila con Swift Package Manager (no requiere Xcode; bastan las Command Line Tools) y
-lo instala en `~/Applications/Batuta.app`.
+lo instala en `~/Applications/Batuta MLX.app`.
 
 | Icono | Estado |
 |---|---|
@@ -102,7 +102,7 @@ Decisiones de diseño:
 
 ## Instalar en otro Mac (desde la app)
 
-Batuta lleva un instalador integrado: en un Mac sin nada, la propia app monta todo el
+Batuta MLX lleva un instalador integrado: en un Mac sin nada, la propia app monta todo el
 sistema (entorno Python con `uv`, mlx-vlm, los 16,3 GB de modelos y los scripts) en
 `~/MLXServer`, sin Xcode, sin Command Line Tools y sin contraseña de administrador.
 
@@ -113,29 +113,29 @@ bloquea con explicación: la GPU solo puede usar ~2/3 de la RAM y los pesos ya o
 
 Pasos:
 
-1. Genera el paquete aquí: `MenuBarApp/build-app.sh` → `MenuBarApp/dist/Batuta.zip`.
+1. Genera el paquete aquí: `MenuBarApp/build-app.sh` → `MenuBarApp/dist/BatutaMLX.zip`.
 2. Cópialo al otro Mac **por USB o scp** (así macOS no lo pone en cuarentena y abre a
    la primera — verificado). Si va por AirDrop/navegador y macOS lo bloquea:
    Ajustes → Privacidad y seguridad → «Abrir igualmente», o
    `xattr -dr com.apple.quarantine <ruta>`.
-3. Descomprime y **mueve Batuta.app a /Applications o ~/Applications con el Finder
+3. Descomprime y **mueve Batuta MLX.app a /Applications o ~/Applications con el Finder
    ANTES de abrirla** (evita App Translocation y deja bien el ítem de inicio).
 4. Ábrela → «Instalar» → espera la descarga (10–40 min) → icono cerebro en la barra.
 
 La instalación es reanudable: si se corta, «Reintentar» continúa (la descarga retoma
 por fichero completado; un shard de 5,3 GB a medias se repite). Instalación
-desatendida: `open Batuta.app --args -autoInstallOnLaunch YES`.
+desatendida: `open Batuta MLX.app --args -autoInstallOnLaunch YES`.
 
 Desinstalar el sistema del otro Mac:
 
 ```bash
-rm -rf ~/MLXServer ~/Applications/Batuta.app /Applications/Batuta.app \
+rm -rf ~/MLXServer ~/Applications/Batuta MLX.app /Applications/Batuta MLX.app \
   ~/.cache/huggingface/hub/models--mlx-community--Qwen3.8* \
   ~/.local/bin/uv ~/.local/bin/uvx ~/.local/bin/env ~/.config/uv ~/.local/share/uv
 defaults delete com.joanplanas.batuta
 ```
 
-(y quitar Batuta de Ajustes → General → Ítems de inicio si se activó).
+(y quitar Batuta MLX de Ajustes → General → Ítems de inicio si se activó).
 
 ## Uso diario
 
@@ -167,7 +167,7 @@ APC_ENABLED=1 .venv/bin/mlx_vlm.server \
   --max-tokens 16384 --enable-thinking --max-kv-size 95536
 ```
 
-(más `--max-num-seqs N` si Batuta inyecta `MAXSEQS` — el picker de «Peticiones
+(más `--max-num-seqs N` si Batuta MLX inyecta `MAXSEQS` — el picker de «Peticiones
 simultáneas» de sus Ajustes).
 
 ## Acceso desde otras aplicaciones
@@ -272,7 +272,7 @@ la caché KV y la reduce ~4× (262 k pasarían de 17,2 a ~4,3 GB), a cambio de a
 Qwen3.8 es un modelo con razonamiento y este servidor arranca con `--enable-thinking`
 (activado en `serve.sh`), así que las peticiones que no digan nada razonan por defecto.
 Cada petición puede desactivarlo con `"enable_thinking": false` — el mini-chat de
-Batuta lo hace — o controlarlo explícitamente:
+Batuta MLX lo hace — o controlarlo explícitamente:
 
 ```json
 {"model": "...", "messages": [...], "enable_thinking": true, "thinking_budget": 2048}
@@ -386,7 +386,7 @@ no por ancho de banda, y ahí esta GPU sí llega.
 
 ## Hacia dónde va
 
-El nombre no es casual: hoy Batuta dirige un solo modelo, pero la arquitectura ya está
+El nombre no es casual: hoy Batuta MLX dirige un solo modelo, pero la arquitectura ya está
 preparada para varios.
 
 - `serve.sh` recibe el modelo y el drafter como variables, y `Templates.swift` genera
@@ -407,3 +407,11 @@ Construido sobre [mlx-vlm](https://github.com/Blaizzy/mlx-vlm) de Prince Canuma 
 [MLX](https://github.com/ml-explore/mlx) de Apple. Los pesos son de
 [Qwen](https://huggingface.co/Qwen) (Apache 2.0), cuantizados por
 [mlx-community](https://huggingface.co/mlx-community).
+
+## Licencia
+
+[MIT](LICENSE) — haz lo que quieras con el código: úsalo, modifícalo, distribúyelo,
+véndelo o cierra tu fork. Lo único que pide es conservar el aviso de copyright.
+
+Los pesos del modelo tienen su propia licencia (Apache 2.0, de Qwen) y no se
+distribuyen aquí: la app los descarga de Hugging Face.

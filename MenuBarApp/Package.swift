@@ -2,9 +2,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "Batuta",
+    name: "BatutaMLX",
     platforms: [.macOS(.v14)],
     targets: [
-        .executableTarget(name: "Batuta", path: "Sources/Batuta")
+        .executableTarget(name: "BatutaMLX", path: "Sources/BatutaMLX")
     ]
 )
