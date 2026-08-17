@@ -21,9 +21,15 @@ export APC_ENABLED=${APC_ENABLED:-1}
 # --max-tokens es solo el valor POR DEFECTO para clientes que no lo mandan (no un tope: si
 # la petición trae max_tokens, gana ella). No existe "sin límite": -1 y 0 cortan al instante.
 # 16384 tok ~= 12.000 palabras; deja 79k de los 95k de contexto libres para el prompt.
-ARGS=(--model "$MODEL" --host "$HOST" --port "$PORT" --max-tokens 16384 --enable-thinking --max-kv-size 95536)
+ARGS=(--model "$MODEL" --host "$HOST" --port "$PORT" --max-tokens 16384 --max-kv-size 95536)
 
-# Peticiones simultáneas (MLXBar lo inyecta como env al arrancar; vacío = sin límite).
+# Razonamiento (thinking) por defecto. Batuta MLX lo inyecta como env al arrancar;
+# cada petición puede anularlo con "enable_thinking": true/false.
+if [[ "${THINKING:-1}" != "0" ]]; then
+  ARGS+=(--enable-thinking)
+fi
+
+# Peticiones simultáneas (Batuta MLX lo inyecta como env al arrancar; vacío = sin límite).
 if [[ -n "${MAXSEQS:-}" ]]; then
   ARGS+=(--max-num-seqs "$MAXSEQS")
 fi

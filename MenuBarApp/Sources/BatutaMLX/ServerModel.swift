@@ -87,6 +87,11 @@ final class ServerModel {
     var desiredMaxSeqs: Int {
         didSet { UserDefaults.standard.set(desiredMaxSeqs, forKey: Self.maxSeqsKey) }
     }
+    /// Razonamiento (thinking) por defecto del servidor. Igual que MAXSEQS: va por
+    /// env al arrancar; cada petición puede anularlo con `enable_thinking`.
+    var thinkingEnabled: Bool {
+        didSet { UserDefaults.standard.set(thinkingEnabled, forKey: Self.thinkingKey) }
+    }
     /// Raíz de la instalación detectada (nil = sin instalar → asistente).
     var installRoot: String?
     var installed: Bool { installRoot != nil }
@@ -102,6 +107,7 @@ final class ServerModel {
     private static let scriptKey = "mlxScriptPath"
     private static let autoStartKey = "autoStartServer"
     private static let maxSeqsKey = "desiredMaxSeqs"
+    private static let thinkingKey = "thinkingEnabled"
     private static let rootOverrideKey = "installRootOverride"
     /// Instalación original de este Mac (nivel 2 de la resolución).
     /// Instalaciones anteriores a `~/MLXServer` (repo clonado a mano). Se migran
@@ -131,6 +137,8 @@ final class ServerModel {
         autoStartServer = UserDefaults.standard.bool(forKey: Self.autoStartKey)
         let seqs = UserDefaults.standard.integer(forKey: Self.maxSeqsKey)
         desiredMaxSeqs = Self.maxSeqsOptions.contains(seqs) ? seqs : 0
+        // Por defecto activado: es el comportamiento validado del stack.
+        thinkingEnabled = UserDefaults.standard.object(forKey: Self.thinkingKey) as? Bool ?? true
         resolveInstallation()
         Task { await pollLoop() }
     }
@@ -348,8 +356,10 @@ final class ServerModel {
         state = .starting
         lastError = nil
         let script = scriptPath
-        // MAXSEQS no es un knob en caliente: serve.sh lo lee del entorno al arrancar.
-        let env: [String: String] = desiredMaxSeqs > 0 ? ["MAXSEQS": String(desiredMaxSeqs)] : [:]
+        // MAXSEQS y THINKING no son knobs en caliente: serve.sh los lee del
+        // entorno al arrancar.
+        var env: [String: String] = ["THINKING": thinkingEnabled ? "1" : "0"]
+        if desiredMaxSeqs > 0 { env["MAXSEQS"] = String(desiredMaxSeqs) }
         Task.detached { [weak self] in
             let result = await Self.runCommand(script, ["start"], env: env)
             await self?.finishStart(result)

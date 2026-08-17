@@ -72,6 +72,7 @@ struct PanelView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Toggle("Abrir Batuta al iniciar sesión", isOn: loginBinding)
                 Toggle("Arrancar el servidor al abrir la app", isOn: $model.autoStartServer)
+                Toggle("Razonamiento (thinking) por defecto", isOn: $model.thinkingEnabled)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Peticiones simultáneas")
                         .foregroundStyle(.secondary)
@@ -82,8 +83,8 @@ struct PanelView: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    // No es un knob en caliente del servidor: va por env al arrancar.
-                    Text("Se aplica al (re)arrancar el servidor.")
+                    // Ni MAXSEQS ni THINKING son knobs en caliente: van por env al arrancar.
+                    Text("Razonamiento y peticiones se aplican al (re)arrancar el servidor.")
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                 }

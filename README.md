@@ -64,7 +64,8 @@ Además:
   y con tope de 1024 tokens; la conversación sobrevive a cerrar el panel.
 - **Memoria del servidor**: los GB de RSS del proceso, en la cabecera, junto al contexto.
 - **Ajustes**: abrir Batuta MLX al iniciar sesión (SMAppService), arrancar el servidor
-  automáticamente al abrir la app (apagado por defecto), y «Ver log del servidor».
+  automáticamente al abrir la app (apagado por defecto), razonamiento (thinking) por
+  defecto encendido/apagado, peticiones simultáneas, y «Ver log del servidor».
 
 ```bash
 MenuBarApp/build-app.sh
@@ -269,8 +270,10 @@ la caché KV y la reduce ~4× (262 k pasarían de 17,2 a ~4,3 GB), a cambio de a
 
 ### Razonamiento (thinking)
 
-Qwen3.8 es un modelo con razonamiento y este servidor arranca con `--enable-thinking`
-(activado en `serve.sh`), así que las peticiones que no digan nada razonan por defecto.
+Qwen3.8 es un modelo con razonamiento y este servidor arranca con él **activado por
+defecto** (toggle en los Ajustes de Batuta MLX, o `THINKING=0 ./mlx start` desde
+Terminal; como todo lo que va por entorno, se aplica al arrancar), así que las
+peticiones que no digan nada razonan por defecto.
 Cada petición puede desactivarlo con `"enable_thinking": false` — el mini-chat de
 Batuta MLX lo hace — o controlarlo explícitamente:
 
