@@ -16,7 +16,8 @@ Dos piezas acopladas:
    por HTTP y, en un Mac nuevo, **instala todo el stack ella misma**.
 
 No es un repositorio git. `.venv/` es el entorno del servidor (no se versiona ni se
-toca a mano); `mlx-vlm` 0.6.14 no está en PyPI y se instala desde el `main` de GitHub.
+toca a mano). `mlx-vlm` se instala **fijado a un release de PyPI**, no desde `main`:
+la versión vive en la constante `SetupModel.mlxVLMVersion` y el README usa la misma.
 
 ## Comandos
 
@@ -92,7 +93,8 @@ para que sea el marcador de cierre.
 Bootstrap pensado para un Mac **sin** Command Line Tools: `uv` standalone
 (`UV_INSTALL_DIR` + `UV_NO_MODIFY_PATH=1`), CPython gestionado por uv
 (`UV_PYTHON_PREFERENCE=only-managed` — el `/usr/bin/python3` de macOS es un stub que
-dispara el diálogo de Apple), y mlx-vlm desde tarball de GitHub (sin git).
+dispara el diálogo de Apple), y mlx-vlm desde un **release de PyPI** (wheel: nada que compilar, y sin git).
+La versión está fijada en `SetupModel.mlxVLMVersion`.
 
 `Templates.swift` contiene `serve.sh`, `mlx` y `bench.py` como literales, generados
 desde los ficheros reales. **Si editas los scripts del proyecto, regenera las
@@ -114,6 +116,17 @@ plantillas**; sus únicas divergencias permitidas son `python3` → `.venv/bin/p
   drafteados sí (aceptación 39 % → 31 % → 25 %, decode 21,7 → 18,6 → 14,2 tok/s;
   BLOCK=6 cae por debajo del serial). Más profundidad solo pagaría con una cabeza de
   mayor aceptación, no como knob.
+- **El drafter 8-bit no paga** (`mlx-community/Qwen3.8-27B-MTP-8bit`, 456 MB): la
+  aceptación solo sube 38,9 % → 40,5 % y el decode baja 20,6 → 19,3 tok/s (mediana,
+  mismo día y térmica comparable). El ~39 % de aceptación de la cabeza stock es límite
+  de entrenamiento, no de cuantización; solo una cabeza mejor entrenada movería la
+  aguja.
+- **Decode según contexto** (MTP, cola de 128 tok, medido en frío): 27,9 tok/s en
+  corto → 19,3 a ~8K → 15,9 a ~16K; el prefill real con prompts largos ronda 140 tok/s
+  (los benches de prompts cortos lo subestiman por overhead fijo). Ojo: la misma
+  petición de 16K lanzada tras minutos de carga sostenida dio 5,3 tok/s — el decode
+  con contexto largo es lo más sensible al throttling; verifica en frío antes de
+  creerte un desplome.
 - **`--max-kv-size N`** solo baja el contexto (nativo 262 144) y es un presupuesto duro
   sobre `prompt + max_tokens`: si te pasas, rechaza con error, no trunca. Es
   ajustable **en caliente** con `PATCH /v1/settings {"max_kv_size": N}`.

@@ -29,10 +29,13 @@ Ajustes → Privacidad y seguridad → «Abrir igualmente».
 
 ```bash
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python "mlx-vlm @ git+https://github.com/Blaizzy/mlx-vlm@main"
+uv pip install --python .venv/bin/python "mlx-vlm==0.6.14"
 ```
 
-`0.6.14` **no está publicado en PyPI** (el último release es 0.6.13); hay que instalarlo desde `main`.
+Se instala una **versión publicada** de mlx-vlm, no el `main` de GitHub: así dos
+instalaciones hechas en fechas distintas montan exactamente el mismo servidor. El
+instalador de la app usa esa misma versión (constante `mlxVLMVersion` en
+`SetupModel.swift`).
 
 Pesos — hacen falta **los dos**, tienen papeles distintos:
 

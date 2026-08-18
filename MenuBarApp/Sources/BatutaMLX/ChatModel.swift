@@ -63,7 +63,9 @@ final class ChatModel {
         let body: [String: Any] = [
             "model": modelName,
             "messages": Array(history),
-            "max_tokens": 1024,
+            // Tope holgado para que respuestas largas no se corten (finish_reason
+            // "length"); sigue acotando una generación desbocada (~8 min a 17 tok/s).
+            "max_tokens": 8192,
             "stream": true,
             // Chat de prueba: respuesta directa, sin gastar tokens en razonar.
             "enable_thinking": false,

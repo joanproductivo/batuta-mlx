@@ -55,8 +55,12 @@ final class SetupModel {
         ("mlx-community/Qwen3.8-27B-4bit", 16_081_490_933),
         ("mlx-community/Qwen3.8-27B-MTP-4bit", 270_000_000),
     ]
-    private static let tarball =
-        "mlx-vlm @ https://github.com/Blaizzy/mlx-vlm/archive/refs/heads/main.tar.gz"
+    /// Versión de mlx-vlm que se instala. Es un release publicado en PyPI (con
+    /// wheel: nada que compilar), no el `main` de GitHub — así dos instalaciones
+    /// en fechas distintas montan exactamente el mismo servidor. Para subirla:
+    /// cambia el número, comprueba que el stack sigue arrancando y publica.
+    static let mlxVLMVersion = "0.6.14"
+    private static var pipSpec: String { "mlx-vlm==\(mlxVLMVersion)" }
 
     init(server: ServerModel) {
         self.server = server
@@ -223,7 +227,7 @@ final class SetupModel {
         guard v.code == 0 else { return fail(2, v.output) }
         begin(2, "instalando mlx-vlm y dependencias…")
         let p = await runCancellable(uvPath,
-            ["pip", "install", "--python", venvPy, Self.tarball], env: envUv)
+            ["pip", "install", "--python", venvPy, Self.pipSpec], env: envUv)
         guard p.code == 0,
               FileManager.default.fileExists(atPath: root + "/.venv/bin/mlx_vlm.server")
         else { return fail(2, p.output) }
