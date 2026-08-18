@@ -92,6 +92,17 @@ final class ServerModel {
     var thinkingEnabled: Bool {
         didSet { UserDefaults.standard.set(thinkingEnabled, forKey: Self.thinkingKey) }
     }
+    /// Esfuerzo de razonamiento. Son los tres niveles que acepta la plantilla de
+    /// Qwen3.8 (low/medium/xhigh); el modelo usa xhigh si nadie manda nada. No hay
+    /// flag de servidor para esto en mlx-vlm 0.6.14 — es un campo POR PETICIÓN
+    /// (`reasoning_effort`), así que la app lo aplica donde controla la petición
+    /// (el chat de prueba) y lo documenta para clientes externos. El tope duro
+    /// alternativo (`thinking_budget`) está descartado: incompatible con el
+    /// drafter MTP (ValueError del servidor, medido).
+    var reasoningEffort: String {
+        didSet { UserDefaults.standard.set(reasoningEffort, forKey: Self.effortKey) }
+    }
+    static let effortOptions = ["low", "medium", "xhigh"]
     /// Raíz de la instalación detectada (nil = sin instalar → asistente).
     var installRoot: String?
     var installed: Bool { installRoot != nil }
@@ -131,6 +142,7 @@ final class ServerModel {
     private static let autoStartKey = "autoStartServer"
     private static let maxSeqsKey = "desiredMaxSeqs"
     private static let thinkingKey = "thinkingEnabled"
+    private static let effortKey = "reasoningEffort"
     private static let rootOverrideKey = "installRootOverride"
     /// Instalación original de este Mac (nivel 2 de la resolución).
     /// Instalaciones anteriores a `~/MLXServer` (repo clonado a mano). Se migran
@@ -169,6 +181,8 @@ final class ServerModel {
         desiredMaxSeqs = Self.maxSeqsOptions.contains(seqs) ? seqs : 0
         // Por defecto activado: es el comportamiento validado del stack.
         thinkingEnabled = UserDefaults.standard.object(forKey: Self.thinkingKey) as? Bool ?? true
+        let savedEffort = UserDefaults.standard.string(forKey: Self.effortKey)
+        reasoningEffort = Self.effortOptions.contains(savedEffort ?? "") ? savedEffort! : "medium"
         resolveInstallation()
         Task { await pollLoop() }
     }

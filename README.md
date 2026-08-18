@@ -68,7 +68,16 @@ Además:
 - **Memoria del servidor**: los GB de RSS del proceso, en la cabecera, junto al contexto.
 - **Ajustes**: abrir Batuta MLX al iniciar sesión (SMAppService), arrancar el servidor
   automáticamente al abrir la app (apagado por defecto), razonamiento (thinking) por
-  defecto encendido/apagado, peticiones simultáneas, y «Ver log del servidor».
+  defecto encendido/apagado, **esfuerzo de razonamiento** (Bajo/Medio/Alto, por defecto
+  Medio), peticiones simultáneas, y «Ver log del servidor».
+
+  Sobre el esfuerzo: son los tres niveles que entiende la plantilla de Qwen3.8
+  (`low`/`medium`/`xhigh`). Es un campo **por petición**, no un flag del servidor: el
+  selector lo aplica el chat de prueba de la app; los clientes externos lo mandan
+  ellos con `reasoning_effort`, y si no mandan nada el modelo usa Alto (su defecto).
+  El tope duro de tokens de razonamiento (`thinking_budget`) queda descartado: el
+  servidor lo rechaza cuando hay speculative decoding, y este stack siempre lleva el
+  drafter MTP.
 
 ```bash
 MenuBarApp/build-app.sh

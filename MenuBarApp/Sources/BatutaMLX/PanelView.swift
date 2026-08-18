@@ -57,7 +57,9 @@ struct PanelView: View {
             ChatView(
                 chat: chat,
                 modelName: model.modelName ?? "mlx-community/Qwen3.8-27B-4bit",
-                serverRunning: serverIsRunning)
+                serverRunning: serverIsRunning,
+                thinking: model.thinkingEnabled,
+                effort: model.reasoningEffort)
         } label: {
             Label("Probar el modelo", systemImage: "message")
                 .font(.caption)
@@ -73,6 +75,26 @@ struct PanelView: View {
                 Toggle("Abrir Batuta al iniciar sesión", isOn: loginBinding)
                 Toggle("Arrancar el servidor al abrir la app", isOn: $model.autoStartServer)
                 Toggle("Razonamiento (thinking) por defecto", isOn: $model.thinkingEnabled)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Esfuerzo de razonamiento")
+                        .foregroundStyle(.secondary)
+                    Picker("Esfuerzo", selection: $model.reasoningEffort) {
+                        Text("Bajo").tag("low")
+                        Text("Medio").tag("medium")
+                        Text("Alto").tag("xhigh")
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .disabled(!model.thinkingEnabled)
+                    // Es un campo POR PETICIÓN (no hay flag de servidor): lo usa el
+                    // chat de prueba; los clientes externos mandan reasoning_effort.
+                    Text("Lo usa el chat de prueba. Clientes externos: campo "
+                        + "reasoning_effort (low/medium/xhigh; sin él, el modelo usa Alto).")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.top, 2)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Peticiones simultáneas")
                         .foregroundStyle(.secondary)
@@ -357,6 +379,8 @@ struct ChatView: View {
     @Bindable var chat: ChatModel
     var modelName: String
     var serverRunning: Bool
+    var thinking: Bool
+    var effort: String
 
     var body: some View {
         VStack(spacing: 6) {
@@ -394,7 +418,7 @@ struct ChatView: View {
                 TextField("Escribe un mensaje…", text: $chat.input)
                     .textFieldStyle(.roundedBorder)
                     .font(.caption)
-                    .onSubmit { chat.send(modelName: modelName) }
+                    .onSubmit { chat.send(modelName: modelName, thinking: thinking, effort: effort) }
                 if chat.isGenerating {
                     Button {
                         chat.cancel()
@@ -406,7 +430,7 @@ struct ChatView: View {
                     .help("Detener la generación")
                 } else {
                     Button {
-                        chat.send(modelName: modelName)
+                        chat.send(modelName: modelName, thinking: thinking, effort: effort)
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
                     }

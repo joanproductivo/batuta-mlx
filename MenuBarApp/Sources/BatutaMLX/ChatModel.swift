@@ -29,7 +29,7 @@ final class ChatModel {
         session = URLSession(configuration: cfg)
     }
 
-    func send(modelName: String) {
+    func send(modelName: String, thinking: Bool, effort: String) {
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isGenerating else { return }
         input = ""
@@ -37,7 +37,7 @@ final class ChatModel {
         messages.append(.init(role: .user, text: text))
         messages.append(.init(role: .assistant, text: ""))
         isGenerating = true
-        task = Task { await stream(modelName: modelName) }
+        task = Task { await stream(modelName: modelName, thinking: thinking, effort: effort) }
     }
 
     func cancel() {
@@ -51,7 +51,7 @@ final class ChatModel {
         error = nil
     }
 
-    private func stream(modelName: String) async {
+    private func stream(modelName: String, thinking: Bool, effort: String) async {
         defer { isGenerating = false }
         var req = URLRequest(url: endpoint)
         req.httpMethod = "POST"
@@ -60,16 +60,20 @@ final class ChatModel {
         let history = messages.dropLast().map {
             ["role": $0.role == .user ? "user" : "assistant", "content": $0.text]
         }
-        let body: [String: Any] = [
+        // El chat sigue los Ajustes de la app (razonamiento y esfuerzo), para
+        // poder probar los cambios sin salir de la barra.
+        var body: [String: Any] = [
             "model": modelName,
             "messages": Array(history),
             // Tope holgado para que respuestas largas no se corten (finish_reason
             // "length"); sigue acotando una generación desbocada (~8 min a 17 tok/s).
             "max_tokens": 8192,
             "stream": true,
-            // Chat de prueba: respuesta directa, sin gastar tokens en razonar.
-            "enable_thinking": false,
+            "enable_thinking": thinking,
         ]
+        if thinking {
+            body["reasoning_effort"] = effort
+        }
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         do {
             let (bytes, resp) = try await session.bytes(for: req)
